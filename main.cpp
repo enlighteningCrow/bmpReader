@@ -215,13 +215,16 @@ public:
         operator char *() const { return m_data; }
     int readChars(FILE *f, std::size_t count) {
         resize(count);
-        std::size_t i{0};
-        for (char *d{m_data}; i < count; ++i) {
-            *(d++) = fgetc(f);
-            if (*(d - 1) == EOF) return -1;
-        }
+        fread(m_data, 1, count, f);
+        // resize(count);
+        // std::size_t i{0};
+        // for (char *d{m_data}; i < count; ++i) {
+        //     *(d++) = fgetc(f);
+        //     if (*(d - 1) == EOF) return -1;
+        // }
         return 0;
     }
+    const char *c_str() const { return m_data; }
     // friend std::ostream& operator<<(std::ostream& out, const String& str) {
     //     str._print();
     //     return out;
@@ -366,7 +369,7 @@ public:
     template<typename T>
     static void printBinary(const Array<T> &arr, std::ostream &out = std::cout) {
         // if (!size) return;
-        for (std::size_t i{((arr.size() * sizeof(T)) / sizeof(std::size_t))}; i <) {}
+        // for (std::size_t i{((arr.size() * sizeof(T)) / sizeof(std::size_t))}; i <) {}
         // while ()
         for (std::size_t i{8 * (arr.size() * sizeof(T)) - 1};; --i) {
             // std::cout << "\nNow:\t" << i << '\n';
@@ -428,6 +431,7 @@ public:
         resize(pixel.m_size);
         // m_size = pixel.m_size;
         memcpy(m_data, pixel.m_data, pixel.m_size);
+        return *this;
     }
     // Bpp stands for bits per pixel
     Pixel &setBpp(int1_t bpp) {
@@ -438,36 +442,54 @@ public:
 
     Pixel &configString(const String &str) {
         memcpy(m_data, str.m_data, str.size());
-        //std::memcpy(m_data, )
-        //fill()
+        // std::memcpy(m_data, )
+        // fill()
+        return *this;
     }
-    Pixel &setColour(int1_t colour, int1_t index) { m_data[index] = colour; }
+    Pixel &setColour(int1_t colour, int1_t index) {
+        m_data[index] = colour;
+        return *this;
+    }
 
     Pixel &setA(int1_t colour) {
         if (m_bpp < 24) throw "Alpha channel not supported in this bitmap file. \n";
         setColour(colour, 0);
+        return *this;
     }
-    Pixel &setR(int1_t colour) { setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 1 : 0) : 0); }
-    Pixel &setG(int1_t colour) { setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1); }
-    Pixel &setB(int1_t colour) { setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 3 : 2) : 2); }
+    Pixel &setR(int1_t colour) {
+        setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 1 : 0) : 0);
+        return *this;
+    }
+    Pixel &setG(int1_t colour) {
+        setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1);
+        return *this;
+    }
+    Pixel &setB(int1_t colour) {
+        setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 3 : 2) : 2);
+        return *this;
+    }
 
-    int1_t &getA() {
+    int1_t &getA() const {
         if (m_bpp < 24) throw "Alpha channel not supported in this bitmap file. \n";
-        //setColour(colour, 0);
+        // setColour(colour, 0);
         return m_data[0];
-
     }
-    int1_t &getR() { 
-        //setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 1 : 0) : 0);
+    int1_t &getR() const {
+        // setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 1 : 0) : 0);
         return m_data[m_bpp >= 24 ? (m_bpp >= 32 ? 1 : 0) : 0];
     }
-    int1_t &getG() { 
-        //setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1); 
-        return m_data[m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1]; 
+    int1_t &getG() const {
+        // setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1);
+        return m_data[m_bpp >= 24 ? (m_bpp >= 32 ? 2 : 1) : 1];
     }
-    int1_t &getB() { 
-        //setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 3 : 2) : 2); 
+    int1_t &getB() const {
+        // setColour(colour, m_bpp >= 24 ? (m_bpp >= 32 ? 3 : 2) : 2);
         return m_data[m_bpp >= 24 ? (m_bpp >= 32 ? 3 : 2) : 2];
+    }
+    friend std::ostream &operator<<(std::ostream &out, const Pixel &pix) {
+        out << "Alpha: " << pix.getA() << "Red: " << pix.getR() << "Green: " << pix.getG() << "Blue: " << pix.getB()
+            << std::endl;
+        return out;
     }
 };
 
@@ -515,6 +537,21 @@ protected:
             type{BITMAPINFOHEADER}, header_size{0}, bm_width{0}, bm_height{0}, color_panes{0}, bits_per_pixel{0},
             compression_method{0}, image_size{0}, hor_res{0}, ver_res{0}, is_top_to_bottom{false}, num_colours{0},
             num_colours_used{0} {}
+        friend std::ostream &operator<<(std::ostream &out, const DIBHeader &d) {
+            std::cout << "header_size:\t" << d.header_size << std::endl
+                      << "bm_width:\t" << d.bm_width << std::endl
+                      << "bm_height:\t" << d.bm_height << std::endl
+                      << "color_panes:\t" << d.color_panes << std::endl
+                      << "bits_per_pixel:\t" << d.bits_per_pixel << std::endl
+                      << "compression_method:\t" << d.compression_method << std::endl
+                      << "image_size:\t" << d.image_size << std::endl
+                      << "hor_res:\t" << d.hor_res << std::endl
+                      << "ver_res:\t" << d.ver_res << std::endl
+                      << "is_top_to_bottom:\t" << d.is_top_to_bottom << std::endl
+                      << "num_colours:\t" << d.num_colours << std::endl
+                      << "num_colours_used:\t" << d.num_colours_used << std::endl;
+            return out;
+        }
     } dh;
     Array<Pixel> pixels{0};
 
@@ -568,10 +605,10 @@ public:
             // str.readChars(f, 4);
             // Binary::writeBits(&dh.header_size, str);
             str.readChars(f, 4);
+            memcpy(&dh.bm_width, str.m_data, str.size());
             Binary::writeBits(&dh.bm_width, str);
             str.readChars(f, 4);
-            Binary::writeBits(&dh.bm_height, str);
-            if (dh.bm_height < 0) {
+            Binary::writeBits(&dh.bm_height, str) if (dh.bm_height < 0) {
                 dh.bm_height        = -dh.bm_height;
                 dh.is_top_to_bottom = true;
             }
@@ -616,17 +653,19 @@ public:
         //     }
         // }
 
-
+        std::cout << "HEEEEEEERRRRRRRRRRRRRRRREEEEEEEEEEEEEEEEEE!!!!!!" << dh;
         for (int i{0}; i < (dh.bm_width * dh.bm_height); i += (dh.bits_per_pixel / 8)) {
             str.readChars(f, dh.bits_per_pixel);
 
             // Binary::writeBits(&pixels[i], str);
             pixels[i].setBpp(dh.bits_per_pixel);
             pixels[i].configString(str);
+            std::cout << "Pixel #" << i << ":\t" << pixels[i];
         }
+        // std::cout << pixels[0].getA()
         std::fstream fs("pixels.txt", std::fstream::out | std::fstream::trunc);
-        Binary::printBinary(pixels, std::cout);
-        Binary::printBinary(pixels, fs);
+        // Binary::printBinary(pixels, std::cout);
+        // Binary::printBinary(pixels, fs);
         // fs << pixels;
         // std::cout << pixels;
 
@@ -655,7 +694,7 @@ public:
 
         return *this;
     }
-    void fill(std::size_t x0, std::size_t y0, std::size_t x1, std::size_t y1, const String& str) {
+    void fill(std::size_t x0, std::size_t y0, std::size_t x1, std::size_t y1, const String &str, int1_t opacity) {
 
         if (x0 > x1) {
             std::size_t a = x0;
@@ -668,17 +707,16 @@ public:
             y1            = a;
         }
         for (std::size_t x = x0; x <= x1; ++x) {
-            for (std::size_t y = y0; y <= y1; ++y) {
-                pixels[y * dh.bm_width + x].configString(str);
-            }
+            for (std::size_t y = y0; y <= y1; ++y) { pixels[y * dh.bm_width + x].configString(str); }
         }
         return;
     }
+    void write(const String &name) { FILE *f = fopen(name.c_str(), "w+"); }
 };
 
 int main(void) {
     int        a;
-    FILE *     f{fopen("rainbow.bmp", "rb")};
+    FILE *     f{fopen("../rainbow.bmp", "r")};
     String     s{"hellos"}, ss{" world!\n"};
     Array<int> b{1, 2, 3, 6, 3, 6, 83, 24, 6}, c{124, 43, 5, 4, 346, 32};
     Array<int> d(b + c);
@@ -687,6 +725,7 @@ int main(void) {
               << d.sort() << std::endl
               << s.sort();
     Bmp bmp1;
+    // fgetc(f);
     bmp1.parse(f);
     // while ((a = fgetc(f)) != -1) {
     //     // printf("%d ", a);

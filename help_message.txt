@@ -1,0 +1,10 @@
+Commands:
+(h)elp									Display help message
+(o)pen <path>							Open a file with name <path>
+(f)ill <x0> <y0> <x1> <y1> <colour>     Fill the pixels within the area specified 
+										with <colour> (specified in hexadecimal)
+(r)esize <width> <height>				Resize the image to the specified <width> and <height>
+(s)cale <factor>						Resize the image by <factor>
+(c)rop <x0> <y0> <x1> <y1>				Crop the image to the area specified
+(e)xit									Exit the program
+(q)uit									Alias for (e)xit

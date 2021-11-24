@@ -123,17 +123,17 @@ Bmp *parse(Bmp *self, FILE *f) {
 
     // fseek(f, self->bh.starting_address, SEEK_SET);
 
-    size_ut times = (self->dh.bm_width) * (self->dh.bm_height);
+    size_t times = (self->dh.bm_width) * (self->dh.bm_height);
 
     int  a_val;
     int *a = &a_val;
 
     FILE *fi = fopen("/home/twistingcamel/programs/kmitl/c++/bmpReader/trial.txt", "w+");
 
-    size_ut overflow = (self->dh.bits_per_pixel * self->dh.bm_width) % 32;
-    size_ut padding  = overflow ? 4 - overflow / 8 : 0;
+    size_t overflow = (self->dh.bits_per_pixel * self->dh.bm_width) % 32;
+    size_t padding  = overflow ? 4 - overflow / 8 : 0;
 
-    for (size_ut i = 0; i < times; ++i) {
+    for (size_t i = 0; i < times; ++i) {
 
         readFile(str, f, (self->dh.bits_per_pixel + 7) / 8);
         writeVar(str, a);
@@ -159,10 +159,12 @@ Bmp *parse(Bmp *self, FILE *f) {
 }
 
 Bmp *parse_bmp(Bmp *self, intArray *fileName) {
-    strAssign(&self->filename, &fileName);
+    strAssign(&self->filename, fileName);
     // printf("%s", c_str(fileName));
     fflush(stdout);
-    FILE *f = fopen(c_str(fileName), "r+");
+    char *cstr = c_str(fileName);
+    FILE *f    = fopen(cstr, "r+");
+    free_c_str(fileName, cstr);
     parse(self, f);
     fclose(f);
     return self;

@@ -8,6 +8,7 @@ typedef struct Header       Header;
 typedef struct BitmapHeader BitmapHeader;
 typedef struct DIBHeader    DIBHeader;
 
+size_t min_64(size_t x, size_t y) { return x > y ? y : x; }
 
 int readFile(intArray *self, FILE *f, size_t count) {
     // static size_ut counter = 0;
@@ -30,7 +31,7 @@ int readArr(intArray *self, intArray *arr, size_t start, size_t end) {
     // Note: this reads from [start, end)
     if (start > end) { return start - end; }
 
-    resize(self, (size_ut)(end - start));
+    resize(self, (size_t)(end - start));
     memcpy(self, arr + start, end - start);
     // int a;
 
@@ -95,25 +96,30 @@ void fill(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1, const intArray 
         y0       = y1;
         y1       = a;
     }
-    y0 = self->dh.bm_height - y0 - 1;
-    y1 = self->dh.bm_height - y1 - 1;
+    if (!self->dh.is_top_to_bottom) {
+        size_t y_tmp = self->dh.bm_height - y0 - 1;
+        y0           = self->dh.bm_height - y1 - 1;
+        y1           = y_tmp;
+    }
+    // y0 = self->dh.bm_height - y0 - 1;
+    // y1 = self->dh.bm_height - y1 - 1;
     for (size_t x = x0; x <= x1; ++x) {
 
         for (size_t y = y0; y <= y1; ++y) {
             configString(&(self->pixels.m_data[y * self->dh.bm_width + x]), str);
-            printf("%lu / %lld\n", y * self->dh.bm_width + x, size_pixArr(&self->pixels));
+            // printf("%lu / %lld\n", y * self->dh.bm_width + x, size_pixArr(&self->pixels));
         }
     }
     return;
 }
 
-void fill_prompt(Bmp *self) {
+int fill_prompt(Bmp *self) {
 #define prompt(name, word, type, scan_target, scan_type)                                                               \
     printf("Enter " #word " " #name ":\t");                                                                            \
     type name;                                                                                                         \
     {                                                                                                                  \
         scan_type tmp;                                                                                                 \
-        scanf("%" #scan_target, &tmp);                                                                                 \
+        if (scanf("%" #scan_target, &tmp) < 0) return -1;                                                              \
         name = ((type)tmp);                                                                                            \
     }
     // printf("Enter point x0: ");
@@ -132,7 +138,27 @@ void fill_prompt(Bmp *self) {
     else {
         fill_num(self, x0, y0, x1, y1, r, g, b);
     }
-    return;
+    return 0;
+#undef prompt
+}
+
+int crop_prompt(Bmp *self) {
+#define prompt(name, word, type, scan_target, scan_type)                                                               \
+    printf("Enter " #word " " #name ":\t");                                                                            \
+    type name;                                                                                                         \
+    {                                                                                                                  \
+        scan_type tmp;                                                                                                 \
+        if (scanf("%" #scan_target, &tmp) < 0) return -1;                                                              \
+        name = ((type)tmp);                                                                                            \
+    }
+    // printf("Enter point x0: ");
+    prompt(x0, point, size_t, lu, size_t);
+    prompt(y0, point, size_t, lu, size_t);
+    prompt(x1, point, size_t, lu, size_t);
+    prompt(y1, point, size_t, lu, size_t);
+    crop_bmp(self, x0, y0, x1, y1);
+    return 0;
+#undef prompt
 }
 
 void fill_num(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1, ...) {
@@ -150,9 +176,14 @@ void fill_num(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1, ...) {
         y0       = y1;
         y1       = a;
     }
-    size_t y_tmp = self->dh.bm_height - y0 - 1;
-    y0           = self->dh.bm_height - y1 - 1;
-    y1           = y_tmp;
+    if (!self->dh.is_top_to_bottom) {
+        size_t y_tmp = self->dh.bm_height - y0 - 1;
+        y0           = self->dh.bm_height - y1 - 1;
+        y1           = y_tmp;
+    }
+    // size_t y_tmp = self->dh.bm_height - y0 - 1;
+    // y0           = self->dh.bm_height - y1 - 1;
+    // y1           = y_tmp;
     if ((int)y1 >= self->dh.bm_height) {
         fprintf(stderr, "Warning: y1 is above height of the bmp file.\n");
         y1 = self->dh.bm_height - 1;
@@ -243,7 +274,10 @@ void scale_bmp(Bmp *self, long double factor) {
         for (size_t j = 0; j < new_height; ++j) {
             copy_pix(
                 pixels.m_data + (i + j * new_width),
-                self->pixels.m_data + (round_down(i / factor) + self->dh.bm_width * round_down(j / factor)));
+                // self->pixels.m_data + (round_down(i / factor) + self->dh.bm_width * round_down(j / factor)));
+                self->pixels.m_data +
+                    (min_64(round_down(i / factor), self->dh.bm_width - 1) +
+                     self->dh.bm_width * min_64(round_down(j / factor), self->dh.bm_height - 1)));
             // pixels.m_data[i + j * new_width] =
             //     self->pixels.m_data[round_down(i / factor) + self->dh.bm_width * round_down(j / factor)];
         }
@@ -255,12 +289,14 @@ void scale_bmp(Bmp *self, long double factor) {
 }
 
 void resize_bmp(Bmp *self, size_t width, size_t height) {
-    size_t      new_width  = width;
-    size_t      new_height = height;
-    long double factor     = round_near(
-            (round_near(width / (long double)(self->dh.bm_width)) +
-         round_near(height / (long double)(self->dh.bm_height))) /
-            2.0L);
+    size_t new_width  = width;
+    size_t new_height = height;
+    // long double factor     = round_near(
+    //         (round_near(width / (long double)(self->dh.bm_width)) +
+    //      round_near(height / (long double)(self->dh.bm_height))) /
+    //         2.0L);
+    long double factorx = round_near(width / (long double)(self->dh.bm_width)),
+                factory = round_near(height / (long double)(self->dh.bm_height));
     pixArray  pixels;
     pixArray *pix = &pixels;
     init_pixArr(pix, new_width * new_height, self->dh.bits_per_pixel);
@@ -268,7 +304,9 @@ void resize_bmp(Bmp *self, size_t width, size_t height) {
         for (size_t j = 0; j < new_height; ++j) {
             copy_pix(
                 pixels.m_data + (i + j * new_width),
-                self->pixels.m_data + (round_down(i / factor) + self->dh.bm_width * round_down(j / factor)));
+                self->pixels.m_data +
+                    (min_64(round_down(i / factorx), self->dh.bm_width - 1) +
+                     self->dh.bm_width * min_64(round_down(j / factory), self->dh.bm_height - 1)));
             // pixels.m_data[i + j * new_width] =
             //     self->pixels.m_data[round_down(i / factor) + self->dh.bm_width * round_down(j / factor)];
         }
@@ -290,9 +328,14 @@ void crop_bmp(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1) {
         y0       = y1;
         y1       = a;
     }
-    size_t y_tmp = self->dh.bm_height - y0 - 1;
-    y0           = self->dh.bm_height - y1 - 1;
-    y1           = y_tmp;
+    if (!self->dh.is_top_to_bottom) {
+        size_t y_tmp = self->dh.bm_height - y0 - 1;
+        y0           = self->dh.bm_height - y1 - 1;
+        y1           = y_tmp;
+    }
+    // size_t y_tmp = self->dh.bm_height - y0 - 1;
+    // y0           = self->dh.bm_height - y1 - 1;
+    // y1           = y_tmp;
     if ((int)y1 >= self->dh.bm_height) {
         fprintf(stderr, "Warning: y1 is above height of the bmp file.\n");
         y1 = self->dh.bm_height - 1;

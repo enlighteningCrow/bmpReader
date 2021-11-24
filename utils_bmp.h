@@ -11,31 +11,31 @@
 
 typedef struct Bmp Bmp;
 
-typedef long long int size_ut;
+// typedef long long int size_t;
 typedef char          int1_t;
 
 struct bmpArray {
-    size_ut m_size;
-    size_ut m_allocated;
+    size_t m_size;
+    size_t m_allocated;
     Bmp    *m_data;
     bool    m_is_sorted;
-    size_ut _middle;
+    size_t _middle;
 };
 
 
 typedef struct bmpArray bmpArray;
 
-size_ut   size_bmpArr(bmpArray *self);
-bmpArray *resize_bmpArr(bmpArray *self, size_ut size);
+size_t   size_bmpArr(bmpArray *self);
+bmpArray *resize_bmpArr(bmpArray *self, size_t size);
 
-bmpArray *remove_bmpArr(bmpArray *self, size_ut start, size_ut end);
+bmpArray *remove_bmpArr(bmpArray *self, size_t start, size_t end);
 
-bmpArray *insert_bmpArr(bmpArray *self, Bmp value, size_ut index);
+bmpArray *insert_bmpArr(bmpArray *self, Bmp value, size_t index);
 
 
-bmpArray *replace_bmpArr(bmpArray *self, Bmp value, size_ut start, size_ut end);
+bmpArray *replace_bmpArr(bmpArray *self, Bmp value, size_t start, size_t end);
 
-bmpArray *pop_front_bmpArr(bmpArray *self, size_ut indexes);
+bmpArray *pop_front_bmpArr(bmpArray *self, size_t indexes);
 
 bmpArray *push_front_bmpArr(bmpArray *self, Bmp val);
 
@@ -48,7 +48,7 @@ bmpArray *pop_back_bmpArr(bmpArray *self);
 
 bmpArray *sort_bmpArr(bmpArray *self);
 
-void init_bmpArr(bmpArray *self, size_ut size);
+void init_bmpArr(bmpArray *self, size_t size);
 void dest_bmpArr(bmpArray *self);
 
 void swap_bmpArr(bmpArray *self, bmpArray *other);

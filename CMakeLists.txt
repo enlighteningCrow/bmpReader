@@ -12,7 +12,7 @@ enable_testing()
 
 # SET(GCC_COVERAGE_COMPILE_FALGS )
 add_compile_options(-Wall -Wextra -ggdb3)
-add_executable(bmpReader main.c pixel.c utils.c utils_pix.c bmp.c parse.c write_bmp.c utils_cptr.c)
+add_executable(bmpReader main.c pixel.c utils.c utils_pix.c bmp.c parse.c write_bmp.c utils_cptr.c utils_bmp.c)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

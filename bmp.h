@@ -97,9 +97,11 @@ Bmp *parse(Bmp *self, FILE *f);
 
 void fill(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1, const intArray *str, int1_t opacity);
 void fill_num(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1, ...);
-void fill_prompt(Bmp *self);
+int  fill_prompt(Bmp *self);
 void scale_bmp(Bmp *self, long double factor);
 void write_bmp(Bmp *self, intArray *name);
+void resize_bmp(Bmp *self, size_t width, size_t height);
+void crop_bmp(Bmp *self, size_t x0, size_t y0, size_t x1, size_t y1);
 void refresh_buf(Bmp *self);
 
 int replaceArr(intArray *self, intArray *other, size_t self_f, size_t self_t, size_t other_f, size_t other_t);

@@ -8,47 +8,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef long long int size_ut;
-typedef char          int1_t;
-typedef int1_t       *int1_t_ptr;
+// typedef long long int size_t;
+typedef char    int1_t;
+typedef int1_t *int1_t_ptr;
 
 struct cptrArray {
-    size_ut     m_size;
-    size_ut     m_allocated;
+    size_t      m_size;
+    size_t      m_allocated;
     int1_t_ptr *m_data;
     bool        m_is_sorted;
-    size_ut     _middle;
+    size_t      _middle;
 };
 
 // #define cptrArray struct cptrArray
 typedef struct cptrArray cptrArray;
 
 size_t     size_cptr(const cptrArray *self);
-cptrArray *resize_cptr(cptrArray *self, size_ut size);
+cptrArray *resize_cptr(cptrArray *self, size_t size);
 
-cptrArray *remove_arr_cptr(cptrArray *self, size_ut start, size_ut end);
+cptrArray *remove_arr_cptr(cptrArray *self, size_t start, size_t end);
 
-cptrArray *insert_cptr(cptrArray *self, int1_t_ptr value, size_ut index);
+cptrArray *insert_cptr(cptrArray *self, int1_t_ptr value, size_t index);
 
 
-cptrArray *replace_cptr(cptrArray *self, int1_t_ptr value, size_ut start, size_ut end);
+cptrArray *replace_cptr(cptrArray *self, int1_t_ptr value, size_t start, size_t end);
 
-cptrArray *pop_front_cptr(cptrArray *self, size_ut indexes);
+cptrArray *pop_front_cptr(cptrArray *self, size_t indexes);
 
 cptrArray *push_front_cptr(cptrArray *self, int1_t_ptr val);
 
-size_ut find_cptr(cptrArray *self, int1_t_ptr target);
-size_ut findGreater_cptr(cptrArray *self, int1_t_ptr target);
-size_ut findGreaterEq_cptr(cptrArray *self, int1_t_ptr target);
-size_ut findLesser_cptr(cptrArray *self, int1_t_ptr target);
-size_ut findLesserEq_cptr(cptrArray *self, int1_t_ptr target);
+size_t find_cptr(cptrArray *self, int1_t_ptr target);
+size_t findGreater_cptr(cptrArray *self, int1_t_ptr target);
+size_t findGreaterEq_cptr(cptrArray *self, int1_t_ptr target);
+size_t findLesser_cptr(cptrArray *self, int1_t_ptr target);
+size_t findLesserEq_cptr(cptrArray *self, int1_t_ptr target);
 
 cptrArray *clear_cptr(cptrArray *self);
-size_ut    _find_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right);
-size_ut    _findg_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right);
-size_ut    _findl_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right);
-size_ut    _findge_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right);
-size_ut    _findle_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right);
+size_t     _find_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right);
+size_t     _findg_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right);
+size_t     _findl_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right);
+size_t     _findge_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right);
+size_t     _findle_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right);
 cptrArray *push_back_cptr(cptrArray *self, int1_t_ptr element);
 cptrArray *pop_back_cptr(cptrArray *self);
 
@@ -64,7 +64,7 @@ cptrArray *sort_cptr(cptrArray *self);
 
 cptrArray *fprint_cptr(cptrArray *self, FILE *f);
 
-void init_cptr(cptrArray *self, size_ut size);
+void init_cptr(cptrArray *self, size_t size);
 void dest_cptr(cptrArray *self);
 
 // size_ut round_near(double n);

@@ -4,7 +4,9 @@ void write_bmp(Bmp *self, intArray *name) {
     // char *c = (char *)malloc(size(name) + 1);
     // memcpy(c, name->m_data, size(name));
     // c[size(name)] = 0;
-    FILE *f = fopen(c_str(name), "wb+");
+    char *cstr = c_str(name);
+    FILE *f    = fopen(cstr, "wb+");
+    free_c_str(name, cstr);
     refresh_buf(self);
     fprint(&(self->whole_str), f);
     fclose(f);
@@ -65,8 +67,8 @@ void refresh_buf(Bmp *self) {
     // self->
     // self->pixels.
 
-    size_ut overflow = (self->dh.bits_per_pixel * self->dh.bm_width) % 32;
-    size_ut padding  = overflow ? 4 - overflow / 8 : 0;
+    size_t overflow = (self->dh.bits_per_pixel * self->dh.bm_width) % 32;
+    size_t padding  = overflow ? 4 - overflow / 8 : 0;
 
     for (size_t i = 0; i < (size_t)(size_pixArr(sfp(pixels))); ++i) {
         concatEq(sfp(whole_str), &(sfv(pixels).m_data[i].m_array));

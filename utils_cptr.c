@@ -5,7 +5,7 @@
 typedef struct cptrArray cptrArray;
 
 size_t     size_cptr(const cptrArray *self) { return self->m_size; }
-cptrArray *resize_cptr(cptrArray *self, size_ut size) {
+cptrArray *resize_cptr(cptrArray *self, size_t size) {
     // // printf("Realloc-ing from %llu ", sizeof(int1_t_ptr) * self->m_allocated);
     // if (self->m_size == size) return self;
     // if (!size) {
@@ -77,12 +77,12 @@ cptrArray *resize_cptr(cptrArray *self, size_ut size) {
 
     // self->m_allocated = size;
 
-    self->m_allocated = (size_ut)(size * 1.3 + 1);
+    self->m_allocated = (size_t)(size * 1.3 + 1);
     int1_t_ptr *tmp   = (int1_t_ptr *)(realloc(self->m_data, (sizeof(int1_t_ptr) * self->m_allocated)));
     if (tmp != NULL)
         self->m_data = tmp;
     else
-        fprintf(stderr, "ERROR: failed to realloc to %lld", size);
+        fprintf(stderr, "ERROR: failed to realloc to %lu", size);
 afterRealloc:
     // if (sz < size) { for (size_ut i = sz; i < size; ++i) {
     //     self->m_data[i]
@@ -92,13 +92,13 @@ afterRealloc:
     return self;
 }
 
-cptrArray *remove_arr_cptr(cptrArray *self, size_ut start, size_ut end) {
+cptrArray *remove_arr_cptr(cptrArray *self, size_t start, size_t end) {
     memcpy(self->m_data + start, self->m_data + end, (self->m_size - end) * sizeof(int1_t_ptr));
     resize_cptr(self, self->m_size - (end - start));
     return self;
 }
 
-cptrArray *insert_cptr(cptrArray *self, int1_t_ptr value, size_ut index) {
+cptrArray *insert_cptr(cptrArray *self, int1_t_ptr value, size_t index) {
     resize_cptr(self, self->m_size + 1);
     memmove(self->m_data + index + 1, self->m_data + index, (self->m_size - index - 1) * sizeof(int1_t_ptr));
     self->m_data[index] = value;
@@ -106,14 +106,14 @@ cptrArray *insert_cptr(cptrArray *self, int1_t_ptr value, size_ut index) {
 }
 
 
-cptrArray *replace_cptr(cptrArray *self, int1_t_ptr value, size_ut start, size_ut end) {
+cptrArray *replace_cptr(cptrArray *self, int1_t_ptr value, size_t start, size_t end) {
     memcpy(self->m_data + start + 1, self->m_data + end, (self->m_size - end) * sizeof(int1_t_ptr));
     resize_cptr(self, self->m_size - (end - start) + 1);
     self->m_data[start] = value;
     return self;
 }
 
-cptrArray *pop_front_cptr(cptrArray *self, size_ut indexes) {
+cptrArray *pop_front_cptr(cptrArray *self, size_t indexes) {
     memcpy(self->m_data, self->m_data + indexes, self->m_size - indexes);
     resize_cptr(self, self->m_size - indexes);
     return self;
@@ -127,27 +127,27 @@ cptrArray *push_front_cptr(cptrArray *self, int1_t_ptr val) {
 }
 
 
-size_ut find_cptr(cptrArray *self, int1_t_ptr target) {
+size_t find_cptr(cptrArray *self, int1_t_ptr target) {
     if (!self->m_size) { return 0UL; }
     if (!self->m_is_sorted) { sort_cptr(self); }
     return _find_cptr(self, target, 0, self->m_size - 1);
 }
-size_ut findGreater_cptr(cptrArray *self, int1_t_ptr target) {
+size_t findGreater_cptr(cptrArray *self, int1_t_ptr target) {
     if (!self->m_size) { return 0UL; }
     if (!self->m_is_sorted) { sort_cptr(self); }
     return _findg_cptr(self, target, 0, self->m_size - 1);
 }
-size_ut findGreaterEq_cptr(cptrArray *self, int1_t_ptr target) {
+size_t findGreaterEq_cptr(cptrArray *self, int1_t_ptr target) {
     if (!self->m_size) { return 0UL; }
     if (!self->m_is_sorted) { sort_cptr(self); }
     return _findge_cptr(self, target, 0, self->m_size - 1);
 }
-size_ut findLesser_cptr(cptrArray *self, int1_t_ptr target) {
+size_t findLesser_cptr(cptrArray *self, int1_t_ptr target) {
     if (!self->m_size) { return 0UL; }
     if (!self->m_is_sorted) { sort_cptr(self); }
     return _findl_cptr(self, target, 0, self->m_size - 1);
 }
-size_ut findLesserEq_cptr(cptrArray *self, int1_t_ptr target) {
+size_t findLesserEq_cptr(cptrArray *self, int1_t_ptr target) {
     if (!self->m_size) { return 0UL; }
     if (!self->m_is_sorted) { sort_cptr(self); }
     return _findle_cptr(self, target, 0, self->m_size - 1);
@@ -158,7 +158,7 @@ cptrArray *clear_cptr(cptrArray *self) {
     resize_cptr(self, 0);
     return self;
 }
-size_ut _find_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right) {
+size_t _find_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right) {
     if (right < left) return self->m_size;
     self->_middle = (left + (right - left) / 2);
     if (self->m_data[self->_middle] == target)
@@ -168,7 +168,7 @@ size_ut _find_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut rig
     else
         return _find_cptr(self, target, self->_middle + 1, right);
 }
-size_ut _findg_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right) {
+size_t _findg_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right) {
     if (right < left) return self->_middle;
     self->_middle = (left + (right - left) / 2);
     if (self->m_data[self->_middle] == target)
@@ -181,7 +181,7 @@ size_ut _findg_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut ri
     else
         return _findg_cptr(self, target, self->_middle + 1, right);
 }
-size_ut _findl_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right) {
+size_t _findl_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right) {
     if (right < left) return self->_middle;
     self->_middle = (left + (right - left) / 2);
     if (self->m_data[self->_middle] == target)
@@ -195,7 +195,7 @@ size_ut _findl_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut ri
         return _findl_cptr(self, target, self->_middle + 1, right);
     }
 }
-size_ut _findge_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right) {
+size_t _findge_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right) {
     if (right < left) return self->_middle;
     self->_middle = (left + (right - left) / 2);
     if (self->m_data[self->_middle] == target) {
@@ -210,7 +210,7 @@ size_ut _findge_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut r
     else
         return _findge_cptr(self, target, self->_middle + 1, right);
 }
-size_ut _findle_cptr(cptrArray *self, int1_t_ptr target, size_ut left, size_ut right) {
+size_t _findle_cptr(cptrArray *self, int1_t_ptr target, size_t left, size_t right) {
     if (right < left) return self->_middle;
     self->_middle = (left + (right - left) / 2);
     if (self->m_data[self->_middle] == target) {
@@ -255,7 +255,7 @@ bool strEq_cptr(const cptrArray *self, const cptrArray *arr) {
 }
 
 bool strEqC_cptr(const cptrArray *self, const char *arr) {
-    if (self->m_size != (size_ut)strlen(arr)) return 0;
+    if (self->m_size != (size_t)strlen(arr)) return 0;
     return !(memcmp(self->m_data, arr, self->m_size));
 }
 
@@ -281,7 +281,7 @@ cptrArray *concatEq_cptr(cptrArray *self, const cptrArray *array) {
     // printf("resized from %lld to %lld\n", size(self), size(self) + size(array));
     // fflush(stdout);
     // size_ut sz = size(self);
-    resize_cptr(self, (size_ut)(size_cptr(self) + size_cptr(array)));
+    resize_cptr(self, (size_t)(size_cptr(self) + size_cptr(array)));
     // memcpy(arr.self->m_data, self->m_data, self->m_size * sizeof(int1_t_ptr));
     // memcpy(arr->m_data, self->m_data, self->m_size * sizeof(int1_t_ptr));
     // memcpy(arr->m_data + self->m_size, array.self->m_data, array.self->m_size * sizeof(int1_t_ptr));
@@ -337,7 +337,7 @@ cptrArray *readLine_cptr(cptrArray *self, FILE *f) {
 
 // }}
 
-void init_cptr(cptrArray *self, size_ut size) {
+void init_cptr(cptrArray *self, size_t size) {
     // cptrArray(size_ut size) :
     // self->m_size      = size;
     self->m_size = 0;
